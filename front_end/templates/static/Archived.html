@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html ng-app="bigDataApp">
+<style type="text/css">
+    /* Style the tab */
+div.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+    font-family: arial;
+}
+
+/* Style the buttons inside the tab */
+div.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+div.tab button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+div.tab button.active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+html{background-color: #E6E6FA;}
+
+h1 {font-family: arial;}
+
+p {font-family: arial;}
+
+body{margin: 30px;}
+
+.arc text {
+  font: 10px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+</style>
+<head>
+    <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"> </script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="app.js"></script>
+    <title> Andrew's Team </title>
+</head>
+
+<body>
+    <div>
+        <h1> Archived Emotion Chart </h1>
+    </div>
+
+    <div class = "tab">
+        <button onclick = "window.location = 'http://localhost:8000/index.html'"> About </button>
+        <button onclick = "window.location = 'http://localhost:8000/Streaming.html'"> Streaming </button>
+        <button onclick = "window.location = 'http://localhost:8000/Archived.html'"> Archived </button>
+    </div>
+
+    <svg width="960" height="500"></svg>
+    <script>
+
+    var svg = d3.select("svg"),
+        width = +svg.attr("width"),
+        height = +svg.attr("height"),
+        radius = Math.min(width, height) / 2,
+        g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    var color = d3.scaleOrdinal(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+    var pie = d3.pie()
+        .sort(null)
+        .value(function(d) { return d.population; });
+
+    var path = d3.arc()
+        .outerRadius(radius - 10)
+        .innerRadius(0);
+
+    var label = d3.arc()
+        .outerRadius(radius - 40)
+        .innerRadius(radius - 40);
+
+    d3.csv("data.csv", function(d) {
+      d.population = +d.population;
+      return d;
+    }, function(error, data) {
+      if (error) throw error;
+
+      var arc = g.selectAll(".arc")
+        .data(pie(data))
+        .enter().append("g")
+          .attr("class", "arc");
+
+      arc.append("path")
+          .attr("d", path)
+          .attr("fill", function(d) { return color(d.data.age); });
+
+      arc.append("text")
+          .attr("transform", function(d) { return "translate(" + label.centroid(d) + ")"; })
+          .attr("dy", "0.35em")
+          .text(function(d) { return d.data.age; });
+    });
+
+    </script>
+    
+</body>
+
+</html>

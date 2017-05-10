@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html ng-app="bigDataApp">
+<style type="text/css">
+div.tab {
+    float: left;
+    border: 1px solid #ccc;
+    background-color: #608090;
+    width: 10%;
+    height: 1000px;
+}
+
+/* Style the buttons inside the tab */
+div.tab button {
+    display: block;
+    background-color: inherit;
+    color: black;
+    padding: 12px 10px;
+    width: 100%;
+    border: 1px solid color: black;
+    outline: 1px solid;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: Trebuchet MS;
+    font-size: 15px;
+}
+
+/* Change background color of buttons on hover */
+div.tab button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current "tab button" class */
+div.tab button.active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+    float: left;
+    padding: 0px 12px;
+    border: 1px solid #ccc;
+    width: 70%;
+    border-left: none;
+    height: 300px;
+}
+
+
+h1 {font-family: Trebuchet MS; font-size: 35px;}
+h1 {background-color: #000000}
+h1 {margin left: 0;}
+h2 {font-family: Trebuchet MS;}
+li{font-family: Trebuchet MS;}
+
+p {font-family: arial;}
+
+body{margin: 0px;}
+
+header{background-color: black;}
+header h1{margin: 0px;}
+</style>
+<header>
+	<meta charset="utf-8">
+	<script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"> </script>
+	<script src="app.js"></script>
+	<title> Andrew's Team </title>
+	<h1> <span style = "color:orange">Emotional </span><span style = "color:blue">State</span></h1>
+</header>
+
+<body>
+
+	<div class = "tab">
+		<button onclick = "window.location = 'http://localhost:8000/index.html'" id = "defaultOpen"> About </button>
+		<button onclick = "window.location = 'http://localhost:8000/Streaming.html'"> Storm Live Data </button>
+		<button onclick = "window.location = 'http://localhost:8000/team.html'" style="color: white"> Team Members </button>
+	</div>
+
+	<div>
+		<ul style = "list-style-type: none; margin: 0; padding: 0;">
+			<h2>Team Members</h2>
+			<li>Vaishnavi Viswanathan, Samarpita Debnath, Zachary Johnson, Andrew Callahan, and Elias Ortiz</li>
+		</ul>
+		 
+	</div>
+	
+</body>
+
+</html>

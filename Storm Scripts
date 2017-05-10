@@ -1,0 +1,185 @@
+AWS instance must have port 8080 open:
+security groups: custom tcp rule -> port range 8080 -> anywhere -> 0.0.0.0
+
+install java:
+java:
+wget --no-cookies --no-check-certificate --header "cookie: gpw_e24=http%3a%2f%2fwww.oracle.com%2f; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/jdk-8u121-linux-x64.rpm"
+sudo yum localinstall jdk-8u121-linux-x64.rpm
+vi .bashrc
+export JAVA_HOME=/usr/java/jdk1.8.0_121
+source .bashrc ==> to refresh path variable
+
+download zookeeper:
+wget http://www.eu.apache.org/dist/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz
+tar -zxvf zookeeper-3.4.6.tar.gz
+cd zookeeper-3.4.6
+cd conf
+cp zoo_sample.cfg zoo.cfg
+vi zoo.cfg
+change dataDir to ==> /home/ec2-user/zk ==> create this dir first
+check if tickTime=2000 and clientPort=2181
+
+download storm:
+wget http://apache.mesi.com.ar/storm/apache-storm-0.9.3/apache-storm-0.9.3.tar.gz
+tar -zxvf apache-storm-0.9.3.tar.gz
+cd apache-storm-0.9.3
+cd conf
+vi storm_env.ini
+JAVA_HOME:/usr/java/jdk1.8.0_121
+vi storm.yaml
+storm.zookeeper.servers:
+– “private ip”
+nimbus.host: “private ip”
+close terminal to refresh the files
+
+Start all the service:
+cd zookeeper-3.4.6
+bin/zkServer.sh start
+cd apache-storm-0.9.3
+bin/storm nimbus
+new terminal: cd apache-storm-0.9.3
+bin/storm supervisor
+new terminal: cd apache-storm-0.9.3
+bin/storm ui
+
+access ui from browser using publicip:8080
+
+
+install lien
+Place it on your $PATH where your shell can find it (eg. /usr/local/bin).
+sudo wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+sudo chmod a+x lein
+./lein ==> installs
+./lein -v ==> gives version
+
+pip install streamparse ==> giving error of libffi.pc
+to solve: sudo yum install libffi-devel
+next came issue with pip version:
+sudo pip install --upgrade pip ==> went from 0.6 to 0.9
+after that in place of pip use pip2
+pip2 install streamparse ==> 
+error: [Errno 13] Permission denied: '/usr/local/lib/python2.7/site-packages/typing.py'
+
+so used pip again:
+
+sudo which pip
+This may reveal something like 'no pip in ($PATH)'.
+
+If that is the case, you can then do:
+
+which pip
+Which will give you a path like /usr/local/bin/pip.
+Copy + paste the path to pip to the sbin folder by running: sudo cp /usr/local/bin/pip /usr/sbin/
+This will allow you to run sudo pip without any errors.
+sudo pip install streamparse
+
+error with gcc:
+unable to execute 'gcc': No such file or directory
+    error: command 'gcc' failed with exit status 1
+
+sudo yum install gcc libffi-devel python-devel openssl-devel
+sudo pip install streamparse
+
+==> successful at last
+
+sparse quickstart wordcount
+
+sparse run -d  ==> test if topology runs locally
+
+Storm version not found error ==> solved by adding following lines in .bashrc
+vi .bashrc ==> 
+export STORM_HOME=/home/ec2-user/apache-storm-0.9.3
+export PATH=$PATH:$STORM_HOME/bin
+source .bashrc
+
+gave following error:
+return parse_version(re.findall(pattern, res.stdout, flags=re.MULTILINE)[0])
+IndexError: list index out of range
+==> probably because local storm does not work on cluster
+
+to submit topology on cluster:
+create environment in config.json
+
+{
+    "library": "",
+    "topology_specs": "topologies/",
+    "virtualenv_specs": "virtualenvs/",
+    "envs": {
+        "prod": {
+            "user": "storm",
+            "nimbus": "172.31.25.142",
+            "workers": [
+                "172.31.25.142"
+            ],
+            "log": {
+                "path": "/var/log/storm/streamparse",
+                "max_bytes": 100000,
+                "backup_count": 10,
+                "level": "info"
+            },
+            "virtualenv_root": "/data/virtualenvs/"
+        }
+    }
+}
+
+Delete:
+{
+    "serializer": "json",
+    "topology_specs": "topologies/",
+    "virtualenv_specs": "virtualenvs/",
+    "envs": {
+        "prod": {
+            "user": "",
+            "ssh_password": "",
+            "nimbus": "",
+            "workers": [],
+            "log": {
+                "path": "",
+                "max_bytes": 1000000,
+                "backup_count": 10,
+                "level": "info"
+            },
+            "virtualenv_root": ""
+        }
+    }
+}
+
+sparse submit --environment prod --name wordcount
+
+error: 
+[172.31.25.142] Executing task '_create_or_update_virtualenv'
+Warning: Unable to load SSH config file '/home/ec2-user/.ssh/config'
+Fatal error: Needed to prompt for a connection or sudo password (host: 172.31.25.142), but input would be ambiguous in parallel mode
+Aborting.
+Fatal error: One or more hosts failed while executing task '_create_or_update_virtualenv'
+Aborting.
+
+solution for Warning: Unable to load SSH config file '/home/ec2-user/.ssh/config':
+vi /home/ec2-user/.ssh/config
+
+solution for Fatal error: Needed to prompt for a connection or sudo password (host: 172.31.25.142), but input would be ambiguous in parallel mode
+Aborting:
+sudo hostname server01
+ssh-keygen -t dsa -P '' -f ~/.ssh/id_dsa
+sudo cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+
+ssh server01 ==>worked
+
+new error:
+OSError: [Errno 13] Permission denied: '/data'
+
+solution:
+@ the root (parent of home)
+sudo mkdir /data
+sudo chown ec2-user /data
+virtualenv /data/virtualenvs//wordcount
+
+next error:
+/bin/sh: lein: command not found
+
+solved it by reinstalling lien in $PATH ==> updated above
+
+next error: storm_thrift.InvalidTopologyException for debug
+removed -dv from submit command --> solved
+
+topology successfully submitted

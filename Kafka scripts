@@ -1,0 +1,34 @@
+ports 9092, 9093, 2181 and 8080 has to be open for the AWS instance using security groups custom tcp rule
+
+sudo yum update
+
+wget --no-cookies --no-check-certificate --header "cookie: gpw_e24=http%3a%2f%2fwww.oracle.com%2f; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/jdk-8u121-linux-x64.rpm"
+sudo yum localinstall jdk-8u121-linux-x64.rpm
+vi .bashrc
+export JAVA_HOME=/usr/java/jdk1.8.0_121
+source .bashrc
+
+wget http://www.eu.apache.org/dist/kafka/0.10.0.0/kafka_2.11-0.10.0.0.tgz
+tar -zxvf kafka_2.11-0.10.0.0.tgz
+
+bin/zookeeper-server-start.sh config/zookeeper.properties
+
+listeners=PLAINTEXT://172.31.30.226:9092
+advertised.listeners=PLAINTEXT://172.31.30.226:9092
+ 
+KAFKA_HEAP_OPTS="-Xmx256M -Xms128M" bin/kafka-server-start.sh config/server.properties
+
+bin/kafka-topics.sh --create --zookeeper 172.31.30.226:2181 --replication-factor 1 --partitions 1 --topic twitterdata
+
+bin/kafka-topics.sh --list --zookeeper 172.31.30.226:2181
+
+bin/kafka-console-producer.sh --broker-list 172.31.30.226:9092 --topic twitterdata
+
+bin/kafka-console-consumer.sh --zookeeper 172.31.30.226:2181--topic twitterdata --from-beginning
+
+sudo yum install git
+
+git clone https://github.com/dpkp/kafka-python
+
+install:
+sudo pip install ./kafka-python
